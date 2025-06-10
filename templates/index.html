@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Markdown 表格搜索</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body { max-width: 800px; margin: auto; padding: 20px; font-family: sans-serif; }
+    textarea { width: 100%; height: 200px; }
+    .result-id { cursor: pointer; color: blue; margin: 5px 0; text-decoration: underline; }
+    .result-id:hover { color: darkblue; }
+    .table-display { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>📄 输入 Markdown 表格</h2>
+  <textarea id="markdownInput" placeholder="在这里粘贴 Markdown 表格..."></textarea>
+  <br>
+  <button onclick="searchTables()">🔍 搜索相似表格</button>
+
+  <h3>🔎 匹配结果：</h3>
+  <div id="results"></div>
+
+  <h3>📊 表格展示：</h3>
+  <div id="tableDisplay" class="table-display"></div>
+
+  <script>
+    async function searchTables() {
+      const markdownInput = document.getElementById("markdownInput").value;
+
+      const response = await fetch("/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markdown: markdownInput })
+      });
+
+      const resultList = await response.json();
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+
+      resultList.forEach(table => {
+        const idDiv = document.createElement("div");
+        idDiv.className = "result-id";
+        idDiv.innerText = table.id;
+        idDiv.onclick = () => {
+          const html = marked.parse(table.markdown);
+          document.getElementById("tableDisplay").innerHTML = html;
+        };
+        resultsDiv.appendChild(idDiv);
+      });
+    }
+  </script>
+</body>
+</html>
